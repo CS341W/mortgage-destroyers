@@ -1,0 +1,22 @@
+<h2>Add a User</h2>
+<form
+  name="signup-form"
+  class="signup-form"
+  method="POST"
+  target="_self"
+  action="/users/create"
+  enctype="multipart/form-data"
+>
+  <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+
+  <div class="row">
+    <input type="text" name="fname" placeholder="First Name" required />
+    <input type="text" name="lname" placeholder="Last Name" required /></div>
+  <div class="row">
+    <label for="avatar">
+      Avatar Image
+    </label>
+    <input type="file" id="avatar" name="avatar" />
+  </div>
+  <button type="submit">Add</button>
+</form>

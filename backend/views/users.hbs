@@ -1,0 +1,27 @@
+<h2>Users</h2>
+<div>
+  {{#each users}}
+    <div class="user">
+      <h2>{{this.fname}} {{this.lname}}</h2>
+      {{#if this.portrait_img}}
+        <img
+          style="max-width:200px"
+          src="{{this.portrait_img}}"
+          alt="{{this.fname}} {{this.lname}}"
+        />
+      {{/if}}
+      <form method="post" action="/users/favorite/{{this.id}}">
+        {{#if this.isFavorite}}
+          <p>Favorite: Yes</p>
+        {{else}}
+          <p>Favorite: No</p>
+        {{/if}}
+        <button type="submit">Toggle Favorite</button>
+      </form>
+      <form method="post" action="/users/delete/{{this.id}}">
+        <input type="hidden" name="_csrf" value="{{csrfToken}}" />
+        <button type="submit">Delete</button>
+      </form>
+    </div>
+  {{/each}}
+</div>

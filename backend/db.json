@@ -1,0 +1,19 @@
+{
+  "users": [
+    {
+      "_csrf": "sSNAzhZh-csARwTjj10u8ghEOpgqkTZdOW64",
+      "fname": "Mark",
+      "lname": "Montoya",
+      "portrait_img": "fc730c501970ba38832ca14974c76357.jpg",
+      "id": "JEbxp",
+      "isFavorite": true
+    },
+    {
+      "_csrf": "yglP5OtG-Xar1Ts-VHum9XcINBiw0bKVJTlY",
+      "fname": "Lily Jo",
+      "lname": "Canine",
+      "portrait_img": "7c8792a753fc06f10e3daf68eab0a8be.jpeg",
+      "id": "eixJM"
+    }
+  ]
+}
