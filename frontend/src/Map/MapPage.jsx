@@ -195,7 +195,7 @@ export default function MapPage() {
       <div className="flex flex-col gap-3 border-b bg-white/80 p-4 backdrop-blur dark:bg-zinc-900/80 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-xl font-semibold">Distance & Area Map</h1>
+            <h1 className="text-xl font-semibold">Area / Distance Calculator</h1>
             <p className="text-sm text-gray-600 dark:text-gray-300">
               Search, drop points, and switch between distance or area modes.
             </p>
@@ -262,7 +262,8 @@ export default function MapPage() {
         <div className="flex-1">
           <MapContainer
             center={[34.0522, -118.2437]} // LA-ish default
-            zoom={3}
+            zoom={5}
+            maxZoom={19}
             className="h-full w-full"
           >
             {/* Satellite tile layer (Esri World Imagery, free for light usage) */}
@@ -402,19 +403,32 @@ export default function MapPage() {
               <ul className="space-y-1 text-xs text-gray-700 dark:text-gray-300">
                 {recentSearches.map((item, idx) => (
                   <li key={`${item.displayName}-${idx}`}>
-                    <button
-                      className="w-full rounded-lg bg-gray-100 px-2 py-1 text-left hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
-                      onClick={() => {
-                        setSearchResult({
-                          lat: item.lat,
-                          lon: item.lon,
-                          displayName: item.displayName,
-                        })
-                        setSearchMarker([item.lat, item.lon])
-                      }}
-                    >
-                      {item.displayName}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="flex-1 rounded-lg bg-gray-100 px-2 py-1 text-left hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700"
+                        onClick={() => {
+                          setSearchResult({
+                            lat: item.lat,
+                            lon: item.lon,
+                            displayName: item.displayName,
+                          })
+                          setSearchMarker([item.lat, item.lon])
+                        }}
+                      >
+                        {item.displayName}
+                      </button>
+                      <button
+                        aria-label={`Remove ${item.displayName}`}
+                        className="rounded-lg bg-transparent px-2 py-1 text-gray-500 hover:text-red-600"
+                        onClick={() =>
+                          setRecentSearches((prev) =>
+                            prev.filter((s) => s.displayName !== item.displayName)
+                          )
+                        }
+                      >
+                        ×
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>

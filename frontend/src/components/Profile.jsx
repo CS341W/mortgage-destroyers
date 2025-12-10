@@ -6,6 +6,8 @@ export default function Profile() {
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [csrfToken, setCsrfToken] = useState("")
+  const [deletingId, setDeletingId] = useState(null)
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -28,7 +30,57 @@ export default function Profile() {
     }
 
     fetchHistory()
+
+    const fetchCsrf = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/csrf-token`, {
+          credentials: "include",
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setCsrfToken(data.csrfToken)
+        }
+      } catch (_err) {
+        // ignore; will be retried on actions
+      }
+    }
+
+    fetchCsrf()
   }, [])
+
+  const handleDelete = async (id) => {
+    if (!csrfToken) {
+      setError("Security token missing. Please refresh.")
+      return
+    }
+    setDeletingId(id)
+    setError("")
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/mortgage-history/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ _csrf: csrfToken }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || "Failed to delete entry")
+      }
+      setHistory((prev) => prev.filter((item) => item.id !== id))
+      // refresh token after mutation
+      const csrfRes = await fetch(`${API_BASE_URL}/csrf-token`, {
+        credentials: "include",
+      })
+      if (csrfRes.ok) {
+        const data = await csrfRes.json()
+        setCsrfToken(data.csrfToken)
+      }
+    } catch (err) {
+      setError(err.message || "Could not delete entry")
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   return (
     <div className="min-h-[calc(100vh-56px)] bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-50">
@@ -85,6 +137,15 @@ export default function Profile() {
                     {new Date(item.createdAt).toLocaleString()}
                   </div>
                 </div>
+                <button
+                  type="button"
+                  aria-label="Remove entry"
+                  disabled={deletingId === item.id}
+                  onClick={() => handleDelete(item.id)}
+                  className="rounded-md px-2 text-slate-500 hover:text-red-400 disabled:opacity-60"
+                >
+                  X
+                </button>
               </div>
 
               <div className="mt-3 space-y-1 text-xs text-slate-300">

@@ -4,6 +4,7 @@ import Navigation from "./components/ui/Navigation";
 import Home from "./components/Home";
 import Profile from "./components/Profile";
 import MapPage from "./Map/MapPage.jsx";
+import PropertyLinesPage from "./Map/PropertyLinesPage.jsx";
 import MortgageCalculator from "./components/MortgageCalculator.jsx";
 import "./App.css";
 
@@ -16,6 +17,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/map" element={<MapPage />} />
+            <Route path="/property-lines" element={<PropertyLinesPage />} />
             <Route path="/mortgage" element={<MortgageCalculator />} />
             <Route path="/profile" element={<Profile />} />
           </Routes>

@@ -13,6 +13,7 @@
     "@clerk/clerk-react": "^5.57.0",
     "@tailwindcss/vite": "^4.1.16",
     "leaflet": "^1.9.4",
+    "leaflet.heat": "^0.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-leaflet": "^5.0.0",

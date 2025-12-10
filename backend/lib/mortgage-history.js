@@ -34,7 +34,19 @@ async function addHistoryEntry(entry) {
   return payload
 }
 
+async function removeHistoryEntry(id) {
+  await db.read()
+  const before = db.data.entries.length
+  db.data.entries = db.data.entries.filter((item) => item.id !== id)
+  if (db.data.entries.length === before) {
+    return false
+  }
+  await db.write()
+  return true
+}
+
 export const mortgageHistory = {
   getHistory,
   addHistoryEntry,
+  removeHistoryEntry,
 }

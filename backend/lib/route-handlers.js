@@ -1,5 +1,4 @@
 import express from "express"
-import multer from "multer"
 import bodyParser from "body-parser"
 import cookieParser from "cookie-parser"
 import csrf from "csurf"
@@ -8,7 +7,6 @@ import dotenv from "dotenv"
 import { database } from "./persistent-database.js" // or use "./in-memory-database.js"
 import { blogDatabase } from "./blog-database.js"
 import { mortgageHistory } from "./mortgage-history.js"
-import path from "path"
 import sgMail from "@sendgrid/mail"
 
 const router = express.Router() // Create a router
@@ -38,8 +36,6 @@ router.use(
 )
 
 // Configure for multi-part, form-based file uploads
-const upload = multer({ dest: "uploads/" })
-
 // configure for handling credentials stored in .env
 dotenv.config()
 
@@ -84,78 +80,6 @@ router.get("/", async (req, res) => {
   try {
     const users = await database.getUsers()
     res.render("home", { users })
-  } catch (error) {
-    console.error(error)
-    res.status(500).send("Internal Server Error")
-  }
-})
-
-// Users route
-router.get("/users", async (req, res) => {
-  try {
-    const users = await database.getUsers()
-    res.render("users", { users })
-  } catch (error) {
-    console.error(error)
-    res.status(500).send("Internal Server Error")
-  }
-})
-
-// Signup route
-router.get("/signup", csrfProtection, async (req, res) => {
-  const csrfToken = req.csrfToken()
-  try {
-    const users = await database.getUsers()
-    res.render("signup", { csrfToken, users })
-  } catch (error) {
-    console.error(error)
-    res.status(500).send("Internal Server Error")
-  }
-})
-
-// Create user route
-router.post(
-  "/users/create",
-  upload.single("avatar"),
-  csrfProtection,
-  async (req, res) => {
-    let fileName = null
-    if (req.file) {
-      const ext = path.extname(req.file.originalname)
-      fileName = `${req.file.filename}${ext}`
-      const fs = await import("fs/promises")
-      await fs.rename(req.file.path, path.join(req.file.destination, fileName))
-    }
-    const userData = {
-      ...req.body,
-      portrait_img: fileName,
-    }
-    try {
-      await database.addUser(userData)
-      res.redirect("/users")
-    } catch (error) {
-      console.error(error)
-      res.status(500).send("Internal Server Error")
-    }
-  }
-)
-
-// Delete user route
-router.post("/users/delete/:id", async (req, res) => {
-  try {
-    await database.removeUser(req.params.id)
-    res.redirect("/users")
-  } catch (error) {
-    console.error(error)
-    res.status(500).send("Internal Server Error")
-  }
-})
-
-// Favorite user route
-router.post("/users/favorite/:id", async (req, res) => {
-  try {
-    await database.favoriteUser(req.params.id)
-    res.redirect("/users")
   } catch (error) {
     console.error(error)
     res.status(500).send("Internal Server Error")
@@ -240,6 +164,72 @@ router.post("/api/mortgage-history", csrfProtection, async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: "Failed to save mortgage history" })
+  }
+})
+
+router.delete(
+  "/api/mortgage-history/:id",
+  csrfProtection,
+  async (req, res) => {
+    try {
+      const removed = await mortgageHistory.removeHistoryEntry(req.params.id)
+      if (!removed) {
+        return res.status(404).json({ error: "History entry not found" })
+      }
+      res.status(204).end()
+    } catch (error) {
+      console.error(error)
+      res.status(500).json({ error: "Failed to delete mortgage history" })
+    }
+  }
+)
+
+// Email mortgage summary
+router.post("/api/mortgage-email", csrfProtection, async (req, res) => {
+  try {
+    const { email, inputs, results } = req.body
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" })
+    }
+    if (!process.env.FROM_EMAIL) {
+      return res
+        .status(500)
+        .json({ error: "FROM_EMAIL is not configured on the server" })
+    }
+
+    const textLines = [
+      "Your Mortgage Calculation",
+      "",
+      `Home price: $${Number(inputs?.homePrice || 0).toLocaleString()}`,
+      `Down payment: ${inputs?.downPaymentPercent || 0}%`,
+      `Rate / Term: ${inputs?.interestRate || 0}% / ${inputs?.termYears || 0} years`,
+      `Monthly total: $${Number(results?.totalMonthly || 0).toLocaleString()}`,
+      "",
+      "Sent from Mortgage Destroyers.",
+    ]
+
+    const html = `
+      <h2>Your Mortgage Calculation</h2>
+      <p><strong>Home price:</strong> $${Number(inputs?.homePrice || 0).toLocaleString()}</p>
+      <p><strong>Down payment:</strong> ${inputs?.downPaymentPercent || 0}%</p>
+      <p><strong>Rate / Term:</strong> ${inputs?.interestRate || 0}% / ${inputs?.termYears || 0} years</p>
+      <p><strong>Monthly total:</strong> $${Number(results?.totalMonthly || 0).toLocaleString()}</p>
+      <p style="margin-top:12px;color:#475467;font-size:13px;">Sent from Mortgage Destroyers.</p>
+    `
+
+    const msg = {
+      to: email,
+      from: process.env.FROM_EMAIL,
+      subject: "Your Mortgage Calculation Summary",
+      text: textLines.join("\n"),
+      html,
+    }
+
+    await sgMail.send(msg)
+    res.json({ success: true })
+  } catch (error) {
+    console.error("SendGrid email error:", error)
+    res.status(500).json({ error: "Failed to send email" })
   }
 })
 

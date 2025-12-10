@@ -35,7 +35,19 @@ export default function Navigation() {
               }`
             }
           >
-            Distance Map
+            Area / Distance
+          </NavLink>
+          <NavLink
+            to="/property-lines"
+            className={({ isActive }) =>
+              `rounded-lg px-3 py-1 transition-all ${
+                isActive
+                  ? "bg-emerald-500/20 text-emerald-200"
+                  : "text-slate-300 hover:text-emerald-200"
+              }`
+            }
+          >
+            Structure Size
           </NavLink>
           <NavLink
             to="/mortgage"
