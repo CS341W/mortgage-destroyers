@@ -23,10 +23,16 @@ router.use(express.static("uploads"))
 router.use(bodyParser.urlencoded({ extended: false }))
 router.use(express.json())
 router.use(cookieParser())
-const csrfProtection = csrf({ cookie: true })
+const csrfProtection = csrf({
+  // Cookie is required for browser clients; secure/sameSite set for cross-site
+  cookie: {
+    sameSite: "none",
+    secure: true,
+  },
+})
 router.use(
   cors({
-    origin: true, // Allows any origin
+    origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : true,
     credentials: true,
   })
 )
