@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import AmortizationTable from "./AmortizationTable";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -25,6 +26,7 @@ export default function MortgageCalculator() {
   const [emailSending, setEmailSending] = useState(false);
   const [emailMessage, setEmailMessage] = useState("");
   const [emailMessageType, setEmailMessageType] = useState("");
+  const [showAmortization, setShowAmortization] = useState(false);
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -463,203 +465,149 @@ export default function MortgageCalculator() {
                 type="button"
                 onClick={handleSave}
                 disabled={saving || !csrfToken}
-                className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/40 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/40 transition hover:bg-emerald-400 active:scale-[0.98] disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Save to history"}
               </button>
-              <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs">
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-44 bg-transparent text-slate-200 outline-none placeholder:text-slate-500"
-                />
-                <button
-                  type="button"
-                  onClick={handleEmail}
-                  disabled={emailSending || !csrfToken}
-                  className="rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-semibold text-slate-950 shadow hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  {emailSending ? "Sending..." : "Email this"}
-                </button>
-              </div>
-              {message && (
-                <span
-                  className={`text-xs ${
-                    messageType === "success"
-                      ? "text-emerald-200"
-                      : "text-red-300"
-                  }`}
-                >
-                  {message}
-                </span>
-              )}
-              {emailMessage && (
-                <span
-                  className={`text-xs ${
-                    emailMessageType === "success"
-                      ? "text-emerald-200"
-                      : "text-red-300"
-                  }`}
-                >
-                  {emailMessage}
-                </span>
-              )}
+              <button
+                type="button"
+                onClick={() => setShowAmortization((prev) => !prev)}
+                className="inline-flex items-center justify-center rounded-xl border border-emerald-400/50 px-4 py-2 text-sm font-semibold text-emerald-100 shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-500/10 active:scale-[0.98]"
+              >
+                {showAmortization
+                  ? "Hide Amortization"
+                  : "Show Amortization"}
+              </button>
             </div>
+
+            {message && (
+              <div
+                className={`mt-3 rounded-md p-3 text-sm ${
+                  messageType === "success"
+                    ? "bg-emerald-500/10 text-emerald-900"
+                    : "bg-red-500/10 text-red-900"
+                }`}
+              >
+                {message}
+              </div>
+            )}
+            {emailMessage && (
+              <div
+                className={`mt-3 rounded-md p-3 text-sm ${
+                  emailMessageType === "success"
+                    ? "bg-emerald-500/10 text-emerald-900"
+                    : "bg-red-500/10 text-red-900"
+                }`}
+              >
+                {emailMessage}
+              </div>
+            )}
           </section>
 
           {/* Results */}
-          <section className="rounded-3xl border border-emerald-500/40 bg-slate-950/90 p-5 shadow-[0_0_40px_rgba(16,185,129,0.35)] backdrop-blur">
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-emerald-300">
-              Monthly Breakdown
-            </h2>
+          <section className="space-y-5">
+            <div className="rounded-3xl border border-slate-800 bg-slate-950/80 p-5 shadow-xl shadow-black/50 backdrop-blur">
+              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-400">
+                Monthly Breakdown
+              </h2>
 
-            <div className="mb-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-slate-900 to-sky-500/20 p-4">
-              <div className="text-xs text-slate-200">Estimated payment</div>
-              <div className="mt-1 text-3xl font-semibold text-emerald-100">
-                {totalMonthly > 0
-                  ? `$${totalMonthly.toFixed(0).toLocaleString()}`
-                  : "—"}
+              <div className="mb-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-slate-900 to-sky-500/20 p-4">
+                <div className="text-xs text-slate-200">Estimated payment</div>
+                <div className="mt-1 text-3xl font-semibold text-emerald-100">
+                  {totalMonthly > 0
+                    ? `$${totalMonthly.toFixed(0).toLocaleString()}`
+                    : "—"}
+                </div>
+                <div className="mt-1 text-[0.7rem] text-slate-200">
+                  Principal &amp; interest, taxes, insurance, and HOA.
+                </div>
               </div>
-              <div className="mt-1 text-[0.7rem] text-slate-200">
-                Principal &amp; interest, taxes, insurance, and HOA.
+
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-300">Loan amount</span>
+                  <span className="font-mono text-slate-100">
+                    {loanAmount > 0
+                      ? `$${loanAmount.toFixed(0).toLocaleString()}`
+                      : "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Down payment</span>
+                  <span className="font-mono text-slate-200">
+                    {downPaymentAmount > 0
+                      ? `$${downPaymentAmount.toFixed(0).toLocaleString()}`
+                      : "—"}{" "}
+                    ({downPaymentPercent || 0}%)
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-300">Principal &amp; interest</span>
+                  <span className="font-mono text-slate-100">
+                    {monthlyPI > 0
+                      ? `$${monthlyPI.toFixed(0).toLocaleString()}`
+                      : "—"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Property taxes</span>
+                  <span className="font-mono text-slate-200">
+                    {monthlyTax > 0
+                      ? `$${monthlyTax.toFixed(0).toLocaleString()}`
+                      : "—"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Insurance</span>
+                  <span className="font-mono text-slate-200">
+                    {insuranceMonthly
+                      ? `$${parseNumber(insuranceMonthly)
+                          .toFixed(0)
+                          .toLocaleString()}`
+                      : "—"}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>HOA</span>
+                  <span className="font-mono text-slate-200">
+                    {hoaMonthly
+                      ? `$${parseNumber(hoaMonthly)
+                          .toFixed(0)
+                          .toLocaleString()}`
+                      : "—"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950/70 p-3 text-[0.75rem] text-slate-300">
+                <div className="mb-1 font-semibold text-emerald-300">
+                  Mortgage Destroyers tip
+                </div>
+                <p>
+                  Use this number to work backwards: after giving to the Lord,
+                  savings, and living expenses, can you still breathe with this
+                  payment? If not, lower the price, raise the down payment, or
+                  attack the term.
+                </p>
               </div>
             </div>
 
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-300">Loan amount</span>
-                <span className="font-mono text-slate-100">
-                  {loanAmount > 0
-                    ? `$${loanAmount.toFixed(0).toLocaleString()}`
-                    : "—"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Down payment</span>
-                <span className="font-mono text-slate-200">
-                  {downPaymentAmount > 0
-                    ? `$${downPaymentAmount.toFixed(0).toLocaleString()}`
-                    : "—"}{" "}
-                  ({downPaymentPercent || 0}%)
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-4 space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-slate-300">Principal &amp; interest</span>
-                <span className="font-mono text-slate-100">
-                  {monthlyPI > 0
-                    ? `$${monthlyPI.toFixed(0).toLocaleString()}`
-                    : "—"}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Property taxes</span>
-                <span className="font-mono text-slate-200">
-                  {monthlyTax > 0
-                    ? `$${monthlyTax.toFixed(0).toLocaleString()}`
-                    : "—"}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>Insurance</span>
-                <span className="font-mono text-slate-200">
-                  {insuranceMonthly
-                    ? `$${parseNumber(insuranceMonthly)
-                        .toFixed(0)
-                        .toLocaleString()}`
-                    : "—"}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>HOA</span>
-                <span className="font-mono text-slate-200">
-                  {hoaMonthly
-                    ? `$${parseNumber(hoaMonthly)
-                        .toFixed(0)
-                        .toLocaleString()}`
-                    : "—"}
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-5 rounded-2xl border border-slate-800 bg-slate-950/70 p-3 text-[0.75rem] text-slate-300">
-              <div className="mb-1 font-semibold text-emerald-300">
-                Mortgage Destroyers tip
-              </div>
-              <p>
-                Use this number to work backwards: after giving to the Lord,
-                savings, and living expenses, can you still breathe with this
-                payment? If not, lower the price, raise the down payment, or
-                attack the term.
-              </p>
-            </div>
           </section>
         </div>
-
-        {/* History list */}
-        <section className="mt-6 rounded-3xl border border-slate-800 bg-slate-950/80 p-5 shadow-xl shadow-black/40">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
-              Recent saves
-            </h2>
-            <span className="text-[0.7rem] text-slate-500">
-              {history.length} saved
-            </span>
-          </div>
-          {history.length === 0 && (
-            <p className="text-sm text-slate-400">
-              Save a calculation to see it here.
-            </p>
-          )}
-          <div className="grid gap-3 sm:grid-cols-2">
-            {history.map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/70 p-3 text-left transition hover:border-emerald-400/60 hover:bg-slate-900/80"
-              >
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <button
-                    onClick={() => loadFromHistory(item)}
-                    className="text-left text-slate-300 hover:text-emerald-200"
-                  >
-                    {new Date(item.createdAt).toLocaleString()}
-                  </button>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-emerald-200">
-                      $
-                      {Number(item?.results?.totalMonthly || 0).toLocaleString()}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label="Remove"
-                      onClick={() => handleDeleteHistory(item.id)}
-                      disabled={deletingId === item.id}
-                      className="rounded-md px-2 text-slate-500 hover:text-red-400 disabled:opacity-60"
-                    >
-                      X
-                    </button>
-                  </div>
-                </div>
-                <button
-                  onClick={() => loadFromHistory(item)}
-                  className="mt-2 text-left text-sm text-slate-200"
-                >
-                  ${Number(item?.inputs?.homePrice || 0).toLocaleString()} |
-                  {item?.inputs?.downPaymentPercent || 0}% down |
-                  {item?.inputs?.interestRate || 0}% |
-                  {item?.inputs?.termYears || 0}y
-                </button>
-              </div>
-            ))}
-          </div>
-        </section>
+        {showAmortization && (
+          <AmortizationTable
+            loanAmount={loanAmount}
+            interestRate={interestRate}
+            termYears={termYears}
+            monthlyPI={monthlyPI}
+          />
+        )}
       </main>
     </div>
   );
