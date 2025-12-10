@@ -1,0 +1,130 @@
+{
+  "entries": [
+    {
+      "id": "CKROAPkA",
+      "createdAt": "2025-12-10T18:11:56.861Z",
+      "inputs": {
+        "homePrice": "750000",
+        "downPaymentPercent": "20",
+        "interestRate": "6.5",
+        "termYears": "30",
+        "propertyTaxRate": "1.2",
+        "insuranceMonthly": "120",
+        "hoaMonthly": "500"
+      },
+      "results": {
+        "loanAmount": 600000,
+        "monthlyPI": 3792.408140957792,
+        "monthlyTax": 750,
+        "totalMonthly": 5162.408140957792,
+        "downPaymentAmount": 150000
+      },
+      "label": null
+    },
+    {
+      "id": "_s0beQzM",
+      "createdAt": "2025-12-10T18:11:58.170Z",
+      "inputs": {
+        "homePrice": "750000",
+        "downPaymentPercent": "20",
+        "interestRate": "6.5",
+        "termYears": "30",
+        "propertyTaxRate": "1.2",
+        "insuranceMonthly": "120",
+        "hoaMonthly": "500"
+      },
+      "results": {
+        "loanAmount": 600000,
+        "monthlyPI": 3792.408140957792,
+        "monthlyTax": 750,
+        "totalMonthly": 5162.408140957792,
+        "downPaymentAmount": 150000
+      },
+      "label": null
+    },
+    {
+      "id": "AsPQkZEL",
+      "createdAt": "2025-12-10T18:11:58.835Z",
+      "inputs": {
+        "homePrice": "750000",
+        "downPaymentPercent": "20",
+        "interestRate": "6.5",
+        "termYears": "30",
+        "propertyTaxRate": "1.2",
+        "insuranceMonthly": "120",
+        "hoaMonthly": "500"
+      },
+      "results": {
+        "loanAmount": 600000,
+        "monthlyPI": 3792.408140957792,
+        "monthlyTax": 750,
+        "totalMonthly": 5162.408140957792,
+        "downPaymentAmount": 150000
+      },
+      "label": null
+    },
+    {
+      "id": "jHe__usT",
+      "createdAt": "2025-12-10T18:11:59.174Z",
+      "inputs": {
+        "homePrice": "750000",
+        "downPaymentPercent": "20",
+        "interestRate": "6.5",
+        "termYears": "30",
+        "propertyTaxRate": "1.2",
+        "insuranceMonthly": "120",
+        "hoaMonthly": "500"
+      },
+      "results": {
+        "loanAmount": 600000,
+        "monthlyPI": 3792.408140957792,
+        "monthlyTax": 750,
+        "totalMonthly": 5162.408140957792,
+        "downPaymentAmount": 150000
+      },
+      "label": null
+    },
+    {
+      "id": "ZuyRaQo1",
+      "createdAt": "2025-12-10T18:11:59.487Z",
+      "inputs": {
+        "homePrice": "750000",
+        "downPaymentPercent": "20",
+        "interestRate": "6.5",
+        "termYears": "30",
+        "propertyTaxRate": "1.2",
+        "insuranceMonthly": "120",
+        "hoaMonthly": "500"
+      },
+      "results": {
+        "loanAmount": 600000,
+        "monthlyPI": 3792.408140957792,
+        "monthlyTax": 750,
+        "totalMonthly": 5162.408140957792,
+        "downPaymentAmount": 150000
+      },
+      "label": null
+    },
+    {
+      "id": "l2b0h9Zg",
+      "createdAt": "2025-12-10T18:11:59.780Z",
+      "inputs": {
+        "homePrice": "750000",
+        "downPaymentPercent": "20",
+        "interestRate": "6.5",
+        "termYears": "30",
+        "propertyTaxRate": "1.2",
+        "insuranceMonthly": "120",
+        "hoaMonthly": "500"
+      },
+      "results": {
+        "loanAmount": 600000,
+        "monthlyPI": 3792.408140957792,
+        "monthlyTax": 750,
+        "totalMonthly": 5162.408140957792,
+        "downPaymentAmount": 150000
+      },
+      "label": null
+    }
+  ]
+}

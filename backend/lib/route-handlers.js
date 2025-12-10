@@ -7,6 +7,7 @@ import cors from "cors"
 import dotenv from "dotenv"
 import { database } from "./persistent-database.js" // or use "./in-memory-database.js"
 import { blogDatabase } from "./blog-database.js"
+import { mortgageHistory } from "./mortgage-history.js"
 import path from "path"
 import sgMail from "@sendgrid/mail"
 
@@ -207,6 +208,32 @@ router.delete("/api/blog/:id", csrfProtection, async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ error: "Failed to delete blog entry" })
+  }
+})
+
+// Mortgage calculator history routes
+router.get("/api/mortgage-history", async (_req, res) => {
+  try {
+    const history = await mortgageHistory.getHistory()
+    res.json(history)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: "Failed to fetch mortgage history" })
+  }
+})
+
+router.post("/api/mortgage-history", csrfProtection, async (req, res) => {
+  try {
+    const entry = await mortgageHistory.addHistoryEntry({
+      _csrf: undefined, // do not persist CSRF token
+      inputs: req.body.inputs,
+      results: req.body.results,
+      label: req.body.label || null,
+    })
+    res.status(201).json(entry)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: "Failed to save mortgage history" })
   }
 })
 

@@ -1,60 +1,84 @@
 // src/components/ui/Navigation.jsx
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom"
 import {
   SignedIn,
   SignedOut,
   SignInButton,
   SignUpButton,
   UserButton,
-} from "@clerk/clerk-react";
+} from "@clerk/clerk-react"
 
 export default function Navigation() {
   return (
-    <nav className="bg-slate-950/90 border-b border-slate-800 backdrop-blur">
-      <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-        {/* Logo / Brand */}
-        <NavLink
-          to="/"
-          className="text-2xl font-black tracking-tight bg-gradient-to-r from-emerald-500 to-sky-400 bg-clip-text text-transparent hover:scale-105 transition-transform"
-        >
-          Mortgage Destroyers
-        </NavLink>
+    <nav className="border-b border-slate-800 bg-slate-950/90 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-3">
+        <div className="flex items-center gap-3">
+          <NavLink
+            to="/"
+            className="text-2xl font-black tracking-tight bg-gradient-to-r from-emerald-400 via-emerald-300 to-sky-300 bg-clip-text text-transparent transition-transform hover:scale-105"
+          >
+            Mortgage Destroyers
+          </NavLink>
+          <span className="hidden text-xs text-slate-500 sm:inline">
+            Plan smart · Move fast · Pay less interest
+          </span>
+        </div>
 
-        {/* Right side: nav links + auth */}
-        <div className="flex items-center gap-6">
-          {/* Only main feature link */}
+        <div className="flex items-center gap-4 text-sm font-semibold">
           <NavLink
             to="/map"
             className={({ isActive }) =>
-              `text-sm font-semibold transition-all ${
+              `rounded-lg px-3 py-1 transition-all ${
                 isActive
-                  ? "text-emerald-400 border-b-2 border-emerald-400 pb-1"
-                  : "text-slate-400 hover:text-emerald-300"
+                  ? "bg-emerald-500/20 text-emerald-200"
+                  : "text-slate-300 hover:text-emerald-200"
               }`
             }
           >
-            📍 Distance Calculator
+            Distance Map
+          </NavLink>
+          <NavLink
+            to="/mortgage"
+            className={({ isActive }) =>
+              `rounded-lg px-3 py-1 transition-all ${
+                isActive
+                  ? "bg-emerald-500/20 text-emerald-200"
+                  : "text-slate-300 hover:text-emerald-200"
+              }`
+            }
+          >
+            Mortgage Calculator
+          </NavLink>
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              `rounded-lg px-3 py-1 transition-all ${
+                isActive
+                  ? "bg-emerald-500/20 text-emerald-200"
+                  : "text-slate-300 hover:text-emerald-200"
+              }`
+            }
+          >
+            Saved History
           </NavLink>
 
-          {/* Auth area */}
-          <SignedOut>
-            <div className="flex items-center gap-2">
-              <SignInButton className="bg-emerald-600 text-white px-3 py-1.5 rounded-lg hover:bg-emerald-700 transition-all text-xs font-semibold shadow-md" />
-              <SignUpButton className="bg-sky-600 text-white px-3 py-1.5 rounded-lg hover:bg-sky-700 transition-all text-xs font-semibold shadow-md" />
-            </div>
-          </SignedOut>
-
-          <SignedIn>
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8",
-                },
-              }}
-            />
-          </SignedIn>
+          <div className="ml-2 flex items-center gap-2">
+            <SignedOut>
+              <SignInButton className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-emerald-700" />
+              <SignUpButton className="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-sky-700" />
+            </SignedOut>
+            <SignedIn>
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "w-8 h-8",
+                  },
+                }}
+              />
+            </SignedIn>
+          </div>
         </div>
       </div>
     </nav>
-  );
+  )
 }
