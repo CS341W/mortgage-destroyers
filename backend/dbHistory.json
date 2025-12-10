@@ -125,6 +125,20 @@
         "downPaymentAmount": 150000
       },
       "label": null
+    },
+    {
+      "id": "tHV71RvV",
+      "createdAt": "2025-12-10T23:54:32.141Z",
+      "inputs": {
+        "loanAmount": "300000",
+        "interestRate": "6.5",
+        "termYears": "45",
+        "monthlyPI": 1717.9223587828938
+      },
+      "results": {
+        "totalMonthly": 1717.9223587828938
+      },
+      "label": "Amortization"
     }
   ]
 }

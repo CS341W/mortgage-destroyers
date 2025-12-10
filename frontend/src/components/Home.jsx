@@ -40,6 +40,12 @@ export default function Home() {
             >
               View Saved Runs
             </Link>
+            <Link
+              to="/amortization"
+              className="inline-flex items-center justify-center rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:border-emerald-400/80"
+            >
+              Amortization Table
+            </Link>
           </div>
         </header>
 

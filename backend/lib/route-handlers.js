@@ -233,4 +233,51 @@ router.post("/api/mortgage-email", csrfProtection, async (req, res) => {
   }
 })
 
+// Email amortization summary
+router.post("/api/amortization-email", csrfProtection, async (req, res) => {
+  try {
+    const { email, loanAmount, interestRate, termYears, monthlyPI } = req.body
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" })
+    }
+    if (!process.env.FROM_EMAIL) {
+      return res
+        .status(500)
+        .json({ error: "FROM_EMAIL is not configured on the server" })
+    }
+
+    const textLines = [
+      "Your Amortization Summary",
+      "",
+      `Loan amount: $${Number(loanAmount || 0).toLocaleString()}`,
+      `Rate / Term: ${interestRate || 0}% / ${termYears || 0} years`,
+      `Monthly principal & interest: $${Number(monthlyPI || 0).toLocaleString()}`,
+      "",
+      "Sent from Mortgage Destroyers.",
+    ]
+
+    const html = `
+      <h2>Your Amortization Summary</h2>
+      <p><strong>Loan amount:</strong> $${Number(loanAmount || 0).toLocaleString()}</p>
+      <p><strong>Rate / Term:</strong> ${interestRate || 0}% / ${termYears || 0} years</p>
+      <p><strong>Monthly principal & interest:</strong> $${Number(monthlyPI || 0).toLocaleString()}</p>
+      <p style="margin-top:12px;color:#475467;font-size:13px;">Sent from Mortgage Destroyers.</p>
+    `
+
+    const msg = {
+      to: email,
+      from: process.env.FROM_EMAIL,
+      subject: "Your Amortization Summary",
+      text: textLines.join("\n"),
+      html,
+    }
+
+    await sgMail.send(msg)
+    res.json({ success: true })
+  } catch (error) {
+    console.error("SendGrid email error:", error)
+    res.status(500).json({ error: "Failed to send email" })
+  }
+})
+
 export default router

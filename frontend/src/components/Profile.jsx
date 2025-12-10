@@ -40,8 +40,8 @@ export default function Profile() {
           const data = await res.json()
           setCsrfToken(data.csrfToken)
         }
-      } catch (_err) {
-        // ignore; will be retried on actions
+      } catch (err) {
+        console.error("CSRF fetch error", err)
       }
     }
 

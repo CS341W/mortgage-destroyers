@@ -469,6 +469,23 @@ export default function MortgageCalculator() {
               >
                 {saving ? "Saving..." : "Save to history"}
               </button>
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-200">
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-44 bg-transparent outline-none placeholder:text-slate-500"
+                />
+                <button
+                  type="button"
+                  onClick={handleEmail}
+                  disabled={emailSending || !csrfToken}
+                  className="rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-semibold text-slate-950 shadow hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {emailSending ? "Sending..." : "Email this"}
+                </button>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowAmortization((prev) => !prev)}
@@ -608,6 +625,64 @@ export default function MortgageCalculator() {
             monthlyPI={monthlyPI}
           />
         )}
+
+        {/* History list */}
+        <section className="mt-6 rounded-3xl border border-slate-800 bg-slate-950/80 p-5 shadow-xl shadow-black/40">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">
+              Recent saves
+            </h2>
+            <span className="text-[0.7rem] text-slate-500">
+              {history.length} saved
+            </span>
+          </div>
+          {history.length === 0 && (
+            <p className="text-sm text-slate-400">
+              Save a calculation to see it here.
+            </p>
+          )}
+          <div className="grid gap-3 sm:grid-cols-2">
+            {history.map((item) => (
+              <div
+                key={item.id}
+                className="flex flex-col rounded-2xl border border-slate-800 bg-slate-950/70 p-3 text-left transition hover:border-emerald-400/60 hover:bg-slate-900/80"
+              >
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <button
+                    onClick={() => loadFromHistory(item)}
+                    className="text-left text-slate-300 hover:text-emerald-200"
+                  >
+                    {new Date(item.createdAt).toLocaleString()}
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-emerald-200">
+                      $
+                      {Number(item?.results?.totalMonthly || 0).toLocaleString()}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label="Remove"
+                      onClick={() => handleDeleteHistory(item.id)}
+                      disabled={deletingId === item.id}
+                      className="rounded-md px-2 text-slate-500 hover:text-red-400 disabled:opacity-60"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+                <button
+                  onClick={() => loadFromHistory(item)}
+                  className="mt-2 text-left text-sm text-slate-200"
+                >
+                  ${Number(item?.inputs?.homePrice || 0).toLocaleString()} |
+                  {item?.inputs?.downPaymentPercent || 0}% down |
+                  {item?.inputs?.interestRate || 0}% |
+                  {item?.inputs?.termYears || 0}y
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
     </div>
   );

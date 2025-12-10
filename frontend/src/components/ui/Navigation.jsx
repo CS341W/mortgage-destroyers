@@ -1,4 +1,4 @@
-// src/components/ui/Navigation.jsx
+import { useState } from "react"
 import { NavLink } from "react-router-dom"
 import {
   SignedIn,
@@ -9,72 +9,77 @@ import {
 } from "@clerk/clerk-react"
 
 export default function Navigation() {
+  const [open, setOpen] = useState(false)
+
+  const linkClass = ({ isActive }) =>
+    `rounded-lg px-3 py-2 sm:py-1 transition-all ${
+      isActive
+        ? "bg-emerald-500/20 text-emerald-200"
+        : "text-slate-300 hover:text-emerald-200"
+    }`
+
   return (
     <nav className="border-b border-slate-800 bg-slate-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-3">
         <div className="flex items-center gap-3">
           <NavLink
             to="/"
+            onClick={() => setOpen(false)}
             className="text-2xl font-black tracking-tight bg-gradient-to-r from-emerald-400 via-emerald-300 to-sky-300 bg-clip-text text-transparent transition-transform hover:scale-105"
           >
             Mortgage Destroyers
           </NavLink>
           <span className="hidden text-xs text-slate-500 sm:inline">
-            Plan smart · Move fast · Pay less interest
+            Plan smart • Move fast • Pay less interest
           </span>
         </div>
 
-        <div className="flex items-center gap-4 text-sm font-semibold">
-          <NavLink
-            to="/map"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-1 transition-all ${
-                isActive
-                  ? "bg-emerald-500/20 text-emerald-200"
-                  : "text-slate-300 hover:text-emerald-200"
-              }`
-            }
-          >
+        <button
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-800 text-slate-200 hover:border-emerald-400 hover:text-emerald-200 sm:hidden"
+          onClick={() => setOpen((v) => !v)}
+          aria-label="Toggle navigation"
+        >
+          ☰
+        </button>
+
+        <div
+          className={`${
+            open ? "flex" : "hidden"
+          } w-full flex-col items-start gap-2 text-sm font-semibold sm:flex sm:w-auto sm:flex-row sm:items-center sm:gap-4`}
+        >
+          <NavLink to="/map" onClick={() => setOpen(false)} className={linkClass}>
             Area / Distance
           </NavLink>
           <NavLink
             to="/property-lines"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-1 transition-all ${
-                isActive
-                  ? "bg-emerald-500/20 text-emerald-200"
-                  : "text-slate-300 hover:text-emerald-200"
-              }`
-            }
+            onClick={() => setOpen(false)}
+            className={linkClass}
           >
             Structure Size
           </NavLink>
           <NavLink
             to="/mortgage"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-1 transition-all ${
-                isActive
-                  ? "bg-emerald-500/20 text-emerald-200"
-                  : "text-slate-300 hover:text-emerald-200"
-              }`
-            }
+            onClick={() => setOpen(false)}
+            className={linkClass}
           >
             Mortgage Calculator
           </NavLink>
           <NavLink
+            to="/amortization"
+            onClick={() => setOpen(false)}
+            className={linkClass}
+          >
+            Amortization
+          </NavLink>
+          <NavLink
             to="/profile"
-            className={({ isActive }) =>
-              `rounded-lg px-3 py-1 transition-all ${
-                isActive
-                  ? "bg-emerald-500/20 text-emerald-200"
-                  : "text-slate-300 hover:text-emerald-200"
-              }`
-            }
+            onClick={() => setOpen(false)}
+            className={linkClass}
           >
             Saved History
           </NavLink>
 
-          <div className="ml-2 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-2 sm:mt-0 sm:ml-2">
             <SignedOut>
               <SignInButton className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-emerald-700" />
               <SignUpButton className="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-sky-700" />
