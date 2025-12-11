@@ -15,6 +15,31 @@
       "role": "user",
       "resetToken": null,
       "resetTokenExp": null
+    },
+    {
+      "id": "bw52jhJGYMXY",
+      "email": "bloggermark@sbcglobal.net",
+      "passwordHash": "$2b$12$JGRRhl7K8Q7ttVYQYfYbZuZmxZzmFeelSMmXiiu8QJd/ZVdLo22hq",
+      "role": "admin",
+      "resetToken": null,
+      "resetTokenExp": null
+    }
+    ,
+    {
+      "id": "bj52jhJGYMXY",
+      "email": "torraj@masters.edu",
+      "passwordHash": "$2b$12$JGRRhl7K8Q7ttVYQYfYbZuZmxZzmFeelSMmXiiu8QJd/ZVdLo22hq",
+      "role": "admin",
+      "resetToken": null,
+      "resetTokenExp": null
+    },
+     {
+      "id": "bj52jhJGhMXY",
+      "email": "garrettmack2005@gmail.com",
+      "passwordHash": "$2b$12$JGRRhl7K8Q7ttVYQYfYbZuZmxZzmFeelSMmXiiu8QJd/ZVdLo22hq",
+      "role": "admin",
+      "resetToken": null,
+      "resetTokenExp": null
     }
   ]
 }
