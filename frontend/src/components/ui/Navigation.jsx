@@ -49,37 +49,39 @@ export default function Navigation() {
             </NavLink>
           ))}
 
-          {user ? (
-            <>
-              <span className="hidden shrink-0 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs text-slate-400 sm:block">
-                {user.email} ({user.role})
-              </span>
-              <button
-                onClick={async () => {
-                  await logout()
-                  nav("/login")
-                }}
-                className="shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-emerald-700"
-              >
-                Sign out
-              </button>
-            </>
-          ) : (
-            <>
-              <NavLink
-                to="/login"
-                className="shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-emerald-700"
-              >
-                Sign in
-              </NavLink>
-              <NavLink
-                to="/register"
-                className="shrink-0 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-sky-700"
-              >
-                Sign up
-              </NavLink>
-            </>
-          )}
+          <div className="ml-auto flex items-center gap-2">
+            {user ? (
+              <>
+                <span className="hidden shrink-0 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs text-slate-400 sm:block">
+                  {user.email} ({user.role})
+                </span>
+                <button
+                  onClick={async () => {
+                    await logout()
+                    nav("/login")
+                  }}
+                  className="shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-emerald-700"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink
+                  to="/login"
+                  className="shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-emerald-700"
+                >
+                  Sign in
+                </NavLink>
+                <NavLink
+                  to="/register"
+                  className="shrink-0 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-sky-700"
+                >
+                  Sign up
+                </NavLink>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </nav>
