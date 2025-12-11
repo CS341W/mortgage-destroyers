@@ -4,30 +4,31 @@ import cookieParser from "cookie-parser"
 import csrf from "csurf"
 import cors from "cors"
 import dotenv from "dotenv"
-import { database } from "./persistent-database.js" // or use "./in-memory-database.js"
-import { blogDatabase } from "./blog-database.js"
-import { mortgageHistory } from "./mortgage-history.js"
 import sgMail from "@sendgrid/mail"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+import { mortgageHistory } from "./mortgage-history.js"
+import { users } from "./users.js"
 
-const router = express.Router() // Create a router
+const router = express.Router()
 
-/**
- * Mount Middleware
- */
+// Load env
+dotenv.config()
 
-// Public files, form data, JSON, CSRF protection, and CORS
+// Middleware
 router.use(express.static("public"))
 router.use(express.static("uploads"))
 router.use(bodyParser.urlencoded({ extended: false }))
 router.use(express.json())
 router.use(cookieParser())
+
 const csrfProtection = csrf({
-  // Cookie is required for browser clients; secure/sameSite set for cross-site
   cookie: {
     sameSite: "none",
     secure: true,
   },
 })
+
 router.use(
   cors({
     origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(",") : true,
@@ -35,113 +36,168 @@ router.use(
   })
 )
 
-// Configure for multi-part, form-based file uploads
-// configure for handling credentials stored in .env
-dotenv.config()
-
-// configure SendGrid API
+// SendGrid
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
-/**
- * Route Definitions
- */
+// JWT helpers
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret"
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "cmena.email@gmail.com"
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173"
+await users.ensureAdminSeed(ADMIN_EMAIL)
 
-// Journal signup route with email integration
-router.post("/api/journal-signup", csrfProtection, async (req, res) => {
+function setAuthCookie(res, payload) {
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" })
+  res.cookie("access_token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60,
+  })
+}
+
+function requireAuth(req, res, next) {
+  const token = req.cookies?.access_token
+  if (!token) return res.status(401).json({ error: "Unauthorized" })
   try {
-    const { email, name } = req.body
-
-    if (!email) {
-      return res.status(400).json({ error: "Email is required" })
-    }
-
-    const msg = {
-      to: email,
-      from: process.env.FROM_EMAIL, // Your verified sender
-      subject: "Welcome to Our Journal!",
-      text: `Hello ${
-        name || "there"
-      },\n\nThank you for signing up for our journal! We're excited to have you on board.\n\nBest regards,\nThe Team`,
-      html: `<p>Hello ${
-        name || "there"
-      },</p><p>Thank you for signing up for our journal! We're excited to have you on board.</p><p>Best regards,<br>The Team</p>`,
-    }
-
-    await sgMail.send(msg)
-    res.json({ success: true, message: "Welcome email sent successfully" })
-  } catch (error) {
-    console.error("SendGrid error:", error)
-    res.status(500).json({ error: "Failed to send email" })
+    const decoded = jwt.verify(token, JWT_SECRET)
+    req.user = decoded
+    next()
+  } catch (err) {
+    return res.status(401).json({ error: "Unauthorized" })
   }
+}
+
+function requireRole(roles) {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({ error: "Forbidden" })
+    }
+    next()
+  }
+}
+
+// Routes
+router.get("/", (_req, res) => {
+  res.send("Mortgage Destroyers API")
 })
 
-// Home route
-router.get("/", async (req, res) => {
-  try {
-    const users = await database.getUsers()
-    res.render("home", { users })
-  } catch (error) {
-    console.error(error)
-    res.status(500).send("Internal Server Error")
-  }
-})
-
-// Route for CSRF token (when needed)
 router.get("/csrf-token", csrfProtection, (req, res) => {
   res.json({ csrfToken: req.csrfToken() })
 })
 
-// Blog API routes
-router.get("/api/blog", csrfProtection, async (req, res) => {
+// Auth
+router.post("/api/auth/register", csrfProtection, async (req, res) => {
   try {
-    const entries = await blogDatabase.getBlogEntries()
-    res.json(entries)
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ error: "Failed to fetch blog entries" })
+    const { email, password } = req.body
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password required" })
+    }
+    const user = await users.createUser({ email, password, role: "visitor" })
+    setAuthCookie(res, { id: user.id, email: user.email, role: user.role })
+    res.json(user)
+  } catch (err) {
+    console.error(err)
+    res.status(400).json({ error: err.message || "Registration failed" })
   }
 })
 
-router.post("/api/blog", csrfProtection, async (req, res) => {
+router.post("/api/auth/login", csrfProtection, async (req, res) => {
   try {
-    const newEntry = await blogDatabase.addBlogEntry(req.body)
-    res.status(201).json(newEntry)
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ error: "Failed to create blog entry" })
+    const { email, password } = req.body
+    const user = await users.getByEmail(email || "")
+    if (!user) return res.status(401).json({ error: "Invalid credentials" })
+    const ok = await bcrypt.compare(password || "", user.passwordHash)
+    if (!ok) return res.status(401).json({ error: "Invalid credentials" })
+    setAuthCookie(res, { id: user.id, email: user.email, role: user.role })
+    res.json({ id: user.id, email: user.email, role: user.role })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: "Login failed" })
   }
 })
 
-router.put("/api/blog/:id", csrfProtection, async (req, res) => {
+router.post("/api/auth/logout", csrfProtection, (req, res) => {
+  res.clearCookie("access_token", { httpOnly: true, secure: true, sameSite: "none" })
+  res.json({ success: true })
+})
+
+router.get("/api/auth/me", requireAuth, (req, res) => {
+  res.json(req.user)
+})
+
+router.post("/api/auth/reset", csrfProtection, async (req, res) => {
   try {
-    const updatedEntry = await blogDatabase.updateBlogEntry(
-      req.params.id,
-      req.body
+    const { email } = req.body
+    if (!email) return res.status(400).json({ error: "Email required" })
+    const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" })
+    const exp = Date.now() + 15 * 60 * 1000
+    await users.setResetToken(email, token, exp)
+    if (!process.env.FROM_EMAIL) {
+      return res.status(500).json({ error: "FROM_EMAIL not configured" })
+    }
+    const resetLink = `${FRONTEND_URL}/reset/confirm?token=${encodeURIComponent(
+      token
+    )}`
+    await sgMail.send({
+      to: email,
+      from: process.env.FROM_EMAIL,
+      subject: "Reset your password",
+      text: `Use this link to reset your password (expires in 15 minutes): ${resetLink}\n\nToken: ${token}`,
+      html: `<p>Use this link to reset your password (expires in 15 minutes):</p><p><a href="${resetLink}">${resetLink}</a></p><p>Token (if needed):</p><pre>${token}</pre>`,
+    })
+    res.json({ success: true })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: "Failed to send reset token" })
+  }
+})
+
+router.post("/api/auth/reset/confirm", csrfProtection, async (req, res) => {
+  try {
+    const { token, password } = req.body
+    if (!token || !password) {
+      return res.status(400).json({ error: "Token and password required" })
+    }
+    const user = await users.updatePasswordWithToken(token, password)
+    if (!user) return res.status(400).json({ error: "Invalid or expired token" })
+    setAuthCookie(res, { id: user.id, email: user.email, role: user.role })
+    res.json(user)
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ error: "Failed to reset password" })
+  }
+})
+
+router.get(
+  "/api/admin/users",
+  requireAuth,
+  requireRole(["admin"]),
+  async (_req, res) => {
+    const list = await users.getAll()
+    res.json(
+      list.map(({ passwordHash, resetToken, resetTokenExp, ...rest }) => rest)
     )
-    if (!updatedEntry) {
-      return res.status(404).json({ error: "Blog entry not found" })
-    }
-    res.json(updatedEntry)
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ error: "Failed to update blog entry" })
   }
-})
+)
 
-router.delete("/api/blog/:id", csrfProtection, async (req, res) => {
-  try {
-    const deleted = await blogDatabase.deleteBlogEntry(req.params.id)
-    if (!deleted) {
-      return res.status(404).json({ error: "Blog entry not found" })
+router.post(
+  "/api/admin/users/:id/role",
+  csrfProtection,
+  requireAuth,
+  requireRole(["admin"]),
+  async (req, res) => {
+    try {
+      const updated = await users.updateRole(req.params.id, req.body.role)
+      if (!updated) return res.status(404).json({ error: "User not found" })
+      res.json(updated)
+    } catch (err) {
+      console.error(err)
+      res.status(500).json({ error: "Failed to update role" })
     }
-    res.json({ message: "Blog entry deleted successfully" })
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ error: "Failed to delete blog entry" })
   }
-})
+)
 
-// Mortgage calculator history routes
+// Mortgage history
 router.get("/api/mortgage-history", async (_req, res) => {
   try {
     const history = await mortgageHistory.getHistory()
@@ -155,7 +211,7 @@ router.get("/api/mortgage-history", async (_req, res) => {
 router.post("/api/mortgage-history", csrfProtection, async (req, res) => {
   try {
     const entry = await mortgageHistory.addHistoryEntry({
-      _csrf: undefined, // do not persist CSRF token
+      _csrf: undefined,
       inputs: req.body.inputs,
       results: req.body.results,
       label: req.body.label || null,
@@ -185,7 +241,12 @@ router.delete(
 )
 
 // Email mortgage summary
-router.post("/api/mortgage-email", csrfProtection, async (req, res) => {
+router.post(
+  "/api/mortgage-email",
+  csrfProtection,
+  requireAuth,
+  requireRole(["admin", "user"]),
+  async (req, res) => {
   try {
     const { email, inputs, results } = req.body
     if (!email) {
@@ -231,10 +292,16 @@ router.post("/api/mortgage-email", csrfProtection, async (req, res) => {
     console.error("SendGrid email error:", error)
     res.status(500).json({ error: "Failed to send email" })
   }
-})
+  }
+)
 
 // Email amortization summary
-router.post("/api/amortization-email", csrfProtection, async (req, res) => {
+router.post(
+  "/api/amortization-email",
+  csrfProtection,
+  requireAuth,
+  requireRole(["admin", "user"]),
+  async (req, res) => {
   try {
     const { email, loanAmount, interestRate, termYears, monthlyPI } = req.body
     if (!email) {
@@ -278,6 +345,7 @@ router.post("/api/amortization-email", csrfProtection, async (req, res) => {
     console.error("SendGrid email error:", error)
     res.status(500).json({ error: "Failed to send email" })
   }
-})
+  }
+)
 
 export default router

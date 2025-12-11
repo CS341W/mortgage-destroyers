@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
+import { useAuth } from "../auth/AuthContext.jsx";
 import AmortizationTable from "./AmortizationTable";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
@@ -10,7 +10,7 @@ function parseNumber(value, fallback = 0) {
 }
 
 export default function MortgageCalculator() {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [homePrice, setHomePrice] = useState("750000");
   const [downPaymentPercent, setDownPaymentPercent] = useState("20");
   const [interestRate, setInterestRate] = useState("6.5");
@@ -29,6 +29,7 @@ export default function MortgageCalculator() {
   const [emailMessage, setEmailMessage] = useState("");
   const [emailMessageType, setEmailMessageType] = useState("");
   const [showAmortization, setShowAmortization] = useState(false);
+  const canEmail = user && user.role !== "visitor";
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -62,6 +63,12 @@ export default function MortgageCalculator() {
     fetchHistory();
     fetchCsrf();
   }, []);
+
+  useEffect(() => {
+    if (user?.email) {
+      setEmail(user.email);
+    }
+  }, [user]);
 
   const results = useMemo(() => {
     const price = parseNumber(homePrice);
@@ -469,38 +476,44 @@ export default function MortgageCalculator() {
             </p>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <SignedIn>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving || !csrfToken}
-                  className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/40 transition hover:bg-emerald-400 active:scale-[0.98] disabled:opacity-50"
-                >
-                  {saving ? "Saving..." : "Save to history"}
-                </button>
-                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-200">
-                  <input
-                    type="email"
-                    placeholder="you@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-44 bg-transparent outline-none placeholder:text-slate-500"
-                  />
+              {user ? (
+                <>
                   <button
                     type="button"
-                    onClick={handleEmail}
-                    disabled={emailSending || !csrfToken}
-                    className="rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-semibold text-slate-950 shadow hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={handleSave}
+                    disabled={saving || !csrfToken}
+                    className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-emerald-500/40 transition hover:bg-emerald-400 active:scale-[0.98] disabled:opacity-50"
                   >
-                    {emailSending ? "Sending..." : "Email this"}
+                    {saving ? "Saving..." : "Save to history"}
                   </button>
-                </div>
-              </SignedIn>
-              <SignedOut>
+                  <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-200">
+                    <input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-44 bg-transparent outline-none placeholder:text-slate-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleEmail}
+                      disabled={emailSending || !csrfToken || !canEmail}
+                      className="rounded-lg bg-sky-500 px-3 py-1.5 text-xs font-semibold text-slate-950 shadow hover:bg-sky-400 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {canEmail ? (emailSending ? "Sending..." : "Email this") : "No email"}
+                    </button>
+                  </div>
+                  {!canEmail && (
+                    <div className="text-xs text-slate-400">
+                      Upgrade role (user/admin) to email results.
+                    </div>
+                  )}
+                </>
+              ) : (
                 <div className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-300">
                   Sign in to save or email your calculation.
                 </div>
-              </SignedOut>
+              )}
               <button
                 type="button"
                 onClick={() => setShowAmortization((prev) => !prev)}
@@ -674,7 +687,7 @@ export default function MortgageCalculator() {
                       $
                       {Number(item?.results?.totalMonthly || 0).toLocaleString()}
                     </span>
-                    <SignedIn>
+                    {user && (
                       <button
                         type="button"
                         aria-label="Remove"
@@ -684,7 +697,7 @@ export default function MortgageCalculator() {
                       >
                         ×
                       </button>
-                    </SignedIn>
+                    )}
                   </div>
                 </div>
                 <button

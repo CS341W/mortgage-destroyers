@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "id": "pd2rt7sWrAd1",
+      "email": "cmena.email@gmail.com",
+      "passwordHash": "$2b$12$NT61Ed97e4dCSmGJwS746O0SgvEOz6HO2GBf4aS3wZpqzlnXtlSx6",
+      "role": "admin",
+      "resetToken": null,
+      "resetTokenExp": null
+    },
+    {
+      "id": "bd52jhJGYMXY",
+      "email": "davejonnybob@gmail.com",
+      "passwordHash": "$2b$12$JGRRhl7K8Q7ttVYQYfYbZuZmxZzmFeelSMmXiiu8QJd/ZVdLo22hq",
+      "role": "user",
+      "resetToken": null,
+      "resetTokenExp": null
+    }
+  ]
+}

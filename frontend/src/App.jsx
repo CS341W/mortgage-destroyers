@@ -7,6 +7,11 @@ import MapPage from "./Map/MapPage.jsx";
 import PropertyLinesPage from "./Map/PropertyLinesPage.jsx";
 import MortgageCalculator from "./components/MortgageCalculator.jsx";
 import AmortizationPage from "./components/AmortizationPage.jsx";
+import Login from "./components/auth/Login.jsx";
+import Register from "./components/auth/Register.jsx";
+import ResetRequest from "./components/auth/ResetRequest.jsx";
+import ResetConfirm from "./components/auth/ResetConfirm.jsx";
+import AdminPage from "./components/admin/AdminPage.jsx";
 import "./App.css";
 
 function App() {
@@ -22,6 +27,11 @@ function App() {
             <Route path="/mortgage" element={<MortgageCalculator />} />
             <Route path="/amortization" element={<AmortizationPage />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/reset" element={<ResetRequest />} />
+            <Route path="/reset/confirm" element={<ResetConfirm />} />
           </Routes>
         </main>
       </div>

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
-import { SignedIn, SignedOut, useAuth } from "@clerk/clerk-react"
+import { useAuth } from "../auth/AuthContext.jsx"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
 
 export default function Profile() {
-  const { isSignedIn } = useAuth()
+  const { user } = useAuth()
+  const isSignedIn = !!user
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -113,6 +114,10 @@ export default function Profile() {
           </p>
         </header>
 
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-200">
+          Please sign in to view, save, or delete history.
+        </div>
+
         {isSignedIn && loading && (
           <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-200">
             Loading history…
@@ -148,7 +153,7 @@ export default function Profile() {
                       {new Date(item.createdAt).toLocaleString()}
                     </div>
                   </div>
-                  <SignedIn>
+                  {isSignedIn && (
                     <button
                       type="button"
                       aria-label="Remove entry"
@@ -158,7 +163,7 @@ export default function Profile() {
                     >
                       X
                     </button>
-                  </SignedIn>
+                  )}
                 </div>
 
                 <div className="mt-3 space-y-1 text-xs text-slate-300">

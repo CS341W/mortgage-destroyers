@@ -1,96 +1,85 @@
-import { useState } from "react"
-import { NavLink } from "react-router-dom"
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from "@clerk/clerk-react"
+import { useMemo } from "react"
+import { NavLink, useNavigate } from "react-router-dom"
+import { useAuth } from "../../auth/AuthContext"
 
 export default function Navigation() {
-  const [open, setOpen] = useState(false)
+  const { user, logout } = useAuth()
+  const nav = useNavigate()
+
+  const menuItems = useMemo(() => {
+    const base = [
+      { to: "/map", short: "A/D", full: "Area / Distance" },
+      { to: "/property-lines", short: "Struct", full: "Structure Size" },
+      { to: "/mortgage", short: "Mort", full: "Mortgage Calc" },
+      { to: "/amortization", short: "Amor", full: "Amortization" },
+      { to: "/profile", short: "Hist", full: "Saved History" },
+    ]
+    if (user?.role === "admin") {
+      base.push({ to: "/admin", short: "Admin", full: "Admin" })
+    }
+    return base
+  }, [user])
 
   const linkClass = ({ isActive }) =>
-    `rounded-lg px-3 py-2 sm:py-1 transition-all ${
+    `group relative flex h-10 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-800 px-2 transition-[width,background-color,border-color] duration-200 ease-out sm:w-16 sm:hover:w-40 ${
       isActive
-        ? "bg-emerald-500/20 text-emerald-200"
-        : "text-slate-300 hover:text-emerald-200"
+        ? "bg-emerald-500/15 border-emerald-400/60 text-emerald-200"
+        : "bg-slate-900/60 text-slate-300 hover:text-emerald-200 hover:border-emerald-400/50"
     }`
 
   return (
     <nav className="border-b border-slate-800 bg-slate-950/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <NavLink
-            to="/"
-            onClick={() => setOpen(false)}
-            className="text-2xl font-black tracking-tight bg-gradient-to-r from-emerald-400 via-emerald-300 to-sky-300 bg-clip-text text-transparent transition-transform hover:scale-105"
-          >
-            Mortgage Destroyers
-          </NavLink>
-        </div>
-
-        <button
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-800 text-slate-200 hover:border-emerald-400 hover:text-emerald-200 sm:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle navigation"
+      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+        <NavLink
+          to="/"
+          className="shrink-0 text-lg font-black tracking-tight bg-gradient-to-r from-emerald-400 via-emerald-300 to-sky-300 bg-clip-text text-transparent transition-transform hover:scale-105"
         >
-          ☰
-        </button>
+          Mortgage Destroyers
+        </NavLink>
 
-        <div
-          className={`${
-            open ? "flex" : "hidden"
-          } w-full flex-col items-start gap-2 text-sm font-semibold sm:flex sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3`}
-        >
-          <NavLink to="/map" onClick={() => setOpen(false)} className={linkClass}>
-            Area / Distance
-          </NavLink>
-          <NavLink
-            to="/property-lines"
-            onClick={() => setOpen(false)}
-            className={linkClass}
-          >
-            Structure Size
-          </NavLink>
-          <NavLink
-            to="/mortgage"
-            onClick={() => setOpen(false)}
-            className={linkClass}
-          >
-            Mortgage Calculator
-          </NavLink>
-          <NavLink
-            to="/amortization"
-            onClick={() => setOpen(false)}
-            className={linkClass}
-          >
-            Amortization
-          </NavLink>
-          <NavLink
-            to="/profile"
-            onClick={() => setOpen(false)}
-            className={linkClass}
-          >
-            Saved History
-          </NavLink>
+        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
+          {menuItems.map((item) => (
+            <NavLink key={item.to} to={item.to} className={linkClass}>
+              <span className="block whitespace-nowrap text-xs font-semibold transition-opacity duration-150 sm:opacity-100 sm:group-hover:opacity-0">
+                {item.short}
+              </span>
+              <span className="pointer-events-none absolute inset-0 hidden items-center justify-center whitespace-nowrap px-3 text-sm font-semibold opacity-0 transition-opacity duration-150 sm:flex sm:group-hover:opacity-100">
+                {item.full}
+              </span>
+            </NavLink>
+          ))}
 
-          <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-0 sm:ml-2">
-            <SignedOut>
-              <SignInButton className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-emerald-700" />
-              <SignUpButton className="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-sky-700" />
-            </SignedOut>
-            <SignedIn>
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "w-8 h-8",
-                  },
+          {user ? (
+            <>
+              <span className="hidden shrink-0 rounded-lg border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs text-slate-400 sm:block">
+                {user.email} ({user.role})
+              </span>
+              <button
+                onClick={async () => {
+                  await logout()
+                  nav("/login")
                 }}
-              />
-            </SignedIn>
-          </div>
+                className="shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-emerald-700"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink
+                to="/login"
+                className="shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-emerald-700"
+              >
+                Sign in
+              </NavLink>
+              <NavLink
+                to="/register"
+                className="shrink-0 rounded-lg bg-sky-600 px-3 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-sky-700"
+              >
+                Sign up
+              </NavLink>
+            </>
+          )}
         </div>
       </div>
     </nav>
