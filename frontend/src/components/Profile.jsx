@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react"
+import { SignedIn, SignedOut, useAuth } from "@clerk/clerk-react"
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ""
 
 export default function Profile() {
+  const { isSignedIn } = useAuth()
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -29,7 +31,11 @@ export default function Profile() {
       }
     }
 
-    fetchHistory()
+    if (isSignedIn) {
+      fetchHistory()
+    } else {
+      setHistory([])
+    }
 
     const fetchCsrf = async () => {
       try {
@@ -45,8 +51,12 @@ export default function Profile() {
       }
     }
 
-    fetchCsrf()
-  }, [])
+    if (isSignedIn) {
+      fetchCsrf()
+    } else {
+      setCsrfToken("")
+    }
+  }, [isSignedIn])
 
   const handleDelete = async (id) => {
     if (!csrfToken) {
@@ -92,7 +102,7 @@ export default function Profile() {
       <main className="relative mx-auto flex max-w-5xl flex-col px-4 pb-10 pt-8">
         <header className="mb-6">
           <p className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-slate-950/70 px-3 py-1 text-xs font-medium text-emerald-200 shadow-sm shadow-emerald-500/20">
-            Mortgage Destroyers  Saved Runs
+            Mortgage Destroyers - Saved Runs - Must be signed in to save/view
           </p>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
             Calculation History
@@ -103,86 +113,91 @@ export default function Profile() {
           </p>
         </header>
 
-        {loading && (
+        {isSignedIn && loading && (
           <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-200">
             Loading history…
           </div>
         )}
 
-        {error && (
+        {isSignedIn && error && (
           <div className="rounded-2xl border border-red-400/40 bg-red-500/10 p-4 text-sm text-red-100">
             {error}
           </div>
         )}
 
-        {!loading && !error && history.length === 0 && (
+        {isSignedIn && !loading && !error && history.length === 0 && (
           <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 text-sm text-slate-200">
             No saved calculations yet. Run one in the calculator and tap
-            “Save to history.”
+            "Save to history." (Sign in required to save/delete.)
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          {history.map((item) => (
-            <div
-              key={item.id}
-              className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 shadow-lg shadow-black/30"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-sm font-semibold text-emerald-200">
-                    {item.label || "Saved scenario"}
+        {isSignedIn && (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {history.map((item) => (
+              <div
+                key={item.id}
+                className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 shadow-lg shadow-black/30"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="text-sm font-semibold text-emerald-200">
+                      {item.label || "Saved scenario"}
+                    </div>
+                    <div className="text-[0.7rem] text-slate-400">
+                      {new Date(item.createdAt).toLocaleString()}
+                    </div>
                   </div>
-                  <div className="text-[0.7rem] text-slate-400">
-                    {new Date(item.createdAt).toLocaleString()}
-                  </div>
+                  <SignedIn>
+                    <button
+                      type="button"
+                      aria-label="Remove entry"
+                      disabled={deletingId === item.id}
+                      onClick={() => handleDelete(item.id)}
+                      className="rounded-md px-2 text-slate-500 hover:text-red-400 disabled:opacity-60"
+                    >
+                      X
+                    </button>
+                  </SignedIn>
                 </div>
-                <button
-                  type="button"
-                  aria-label="Remove entry"
-                  disabled={deletingId === item.id}
-                  onClick={() => handleDelete(item.id)}
-                  className="rounded-md px-2 text-slate-500 hover:text-red-400 disabled:opacity-60"
-                >
-                  X
-                </button>
-              </div>
 
-              <div className="mt-3 space-y-1 text-xs text-slate-300">
-                <div className="flex justify-between">
-                  <span>Home price</span>
-                  <span className="font-mono">
-                    ${Number(item?.inputs?.homePrice || 0).toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Down payment</span>
-                  <span className="font-mono">
-                    {item?.inputs?.downPaymentPercent || 0}% (
-                    $
-                    {Number(
-                      item?.results?.downPaymentAmount || 0
-                    ).toLocaleString()}
-                    )
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Rate / Term</span>
-                  <span className="font-mono">
-                    {item?.inputs?.interestRate || 0}% ·{" "}
-                    {item?.inputs?.termYears || 0} yrs
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Monthly total</span>
-                  <span className="font-mono text-emerald-200">
-                    ${Number(item?.results?.totalMonthly || 0).toLocaleString()}
-                  </span>
+                <div className="mt-3 space-y-1 text-xs text-slate-300">
+                  <div className="flex justify-between">
+                    <span>Home price</span>
+                    <span className="font-mono">
+                      ${Number(item?.inputs?.homePrice || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Down payment</span>
+                    <span className="font-mono">
+                      {item?.inputs?.downPaymentPercent || 0}% (
+                      $
+                      {Number(
+                        item?.results?.downPaymentAmount || 0
+                      ).toLocaleString()}
+                      )
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Rate / Term</span>
+                    <span className="font-mono">
+                      {item?.inputs?.interestRate || 0}% •{" "}
+                      {item?.inputs?.termYears || 0} yrs
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Monthly total</span>
+                    <span className="font-mono text-emerald-200">
+                      $
+                      {Number(item?.results?.totalMonthly || 0).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   )
