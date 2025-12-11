@@ -20,8 +20,8 @@ export default function Navigation() {
 
   return (
     <nav className="border-b border-slate-800 bg-slate-950/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-4 py-3">
-        <div className="flex items-center gap-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
+        <div className="flex items-center gap-2">
           <NavLink
             to="/"
             onClick={() => setOpen(false)}
@@ -29,9 +29,6 @@ export default function Navigation() {
           >
             Mortgage Destroyers
           </NavLink>
-          <span className="hidden text-xs text-slate-500 sm:inline">
-            Plan smart • Move fast • Pay less interest
-          </span>
         </div>
 
         <button
@@ -45,7 +42,7 @@ export default function Navigation() {
         <div
           className={`${
             open ? "flex" : "hidden"
-          } w-full flex-col items-start gap-2 text-sm font-semibold sm:flex sm:w-auto sm:flex-row sm:items-center sm:gap-4`}
+          } w-full flex-col items-start gap-2 text-sm font-semibold sm:flex sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:gap-3`}
         >
           <NavLink to="/map" onClick={() => setOpen(false)} className={linkClass}>
             Area / Distance
@@ -79,7 +76,7 @@ export default function Navigation() {
             Saved History
           </NavLink>
 
-          <div className="mt-2 flex items-center gap-2 sm:mt-0 sm:ml-2">
+          <div className="mt-2 flex flex-wrap items-center gap-2 sm:mt-0 sm:ml-2">
             <SignedOut>
               <SignInButton className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-emerald-700" />
               <SignUpButton className="rounded-lg bg-sky-600 px-3 py-1.5 text-xs font-semibold text-white shadow-md transition-all hover:bg-sky-700" />
